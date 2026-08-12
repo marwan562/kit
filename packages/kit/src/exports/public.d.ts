@@ -17,6 +17,7 @@ import { Plugin } from 'vite';
 import { RouteId as AppRouteId, LayoutParams as AppLayoutParams } from '$app/types';
 import { ParamMatcher } from '@sveltejs/kit/params';
 import { StandardSchemaV1 } from '@standard-schema/spec';
+import { getRequest, setResponse } from '@sveltejs/kit/node';
 
 export { PrerenderOption } from '../types/private.js';
 
@@ -52,6 +53,18 @@ export interface Adapter {
 		 */
 		instrumentation?: () => boolean;
 	};
+	/**
+	 * This function overrides the default behavior to convert an `http.IncomingMessage` to a `Request` object.
+	 * To call the original setRequest function, import it from `@sveltejs/kit/node`.
+	 * @since 3.0.0
+	 */
+	getRequest?: typeof getRequest;
+	/**
+	 * This function overrides the default behavior to write a `Response` object to an `http.ServerResponse`.
+	 * To call the original setResponse function, import it from `@sveltejs/kit/node`.
+	 * @since 3.0.0
+	 */
+	setResponse?: typeof setResponse;
 	/**
 	 * Creates an `Emulator`, which allows the adapter to influence the environment
 	 * during dev, build and prerendering.
