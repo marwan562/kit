@@ -37,10 +37,9 @@ export default {
 	/**
 	 * @param {Request} req
 	 * @param {{ ASSETS: { fetch: typeof fetch } }} env
-	 * @param {ExecutionContext} ctx
 	 * @returns {Promise<Response>}
 	 */
-	async fetch(req, env, ctx) {
+	async fetch(req, env) {
 		if (!origin) {
 			origin = new URL(req.url).origin;
 		}
@@ -96,12 +95,6 @@ export default {
 
 		// dynamically-generated pages
 		return await server.respond(req, {
-			platform: {
-				env,
-				ctx,
-				caches,
-				cf: req.cf
-			},
 			getClientAddress() {
 				return /** @type {string} */ (req.headers.get('cf-connecting-ip'));
 			}
