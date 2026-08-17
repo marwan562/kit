@@ -71,6 +71,7 @@ export interface BuildData {
 	manifest_data: ManifestData;
 	out_dir: string;
 	service_worker: string | null;
+	/** populates the SSRManifest's _.client property */
 	client: {
 		/** Path to the client entry point. */
 		start: string;
@@ -415,6 +416,8 @@ export interface ServerMetadata {
 	routes: Map<string, ServerMetadataRoute>;
 	/** For each hashed remote file, a map of export name -> { type, dynamic }, where `dynamic` is `false` for non-dynamic prerender functions */
 	remotes: Map<string, Map<string, { type: RemoteInternals['type']; dynamic: boolean }>>;
+	should_prerender: boolean;
+	has_dynamic_endpoints: boolean;
 }
 
 export type SSRComponentLoader = () => Promise<Component>;

@@ -164,6 +164,7 @@ export async function dev(
 			return;
 		}
 
+		// TODO: try to abstract the dev SSR manifest creation into a reusable function
 		manifest = {
 			appDir: svelte_config.appDir,
 			appPath: svelte_config.appDir,
@@ -243,7 +244,7 @@ export async function dev(
 						}
 
 						if (node.universal) {
-							if (node.page_options?.ssr === false) {
+							if (node.page_options?.ssr === false || svelte_config.router.type === 'hash') {
 								result.universal = /** @type {UniversalNode} */ (node.page_options);
 							} else {
 								// TODO: explain why the file was loaded on the server if we fail to load it
@@ -338,6 +339,8 @@ export async function dev(
 				}
 			}
 		};
+		// @ts-expect-error we're adding `__sveltekit` to the Vite dev server object
+		vite_dev_server.__sveltekit = { manifest };
 	}
 
 	/** @param {Error} error */
@@ -492,6 +495,24 @@ export async function dev(
 	/** @type {Promise<void> | undefined} */
 	let init_manifest;
 
+	vite_dev_server.middlewares.stack.unshift({
+		route: '',
+		/** @type {import('vite').Connect.NextHandleFunction} */
+		handle: async (req, res, next) => {
+			// Vite throws a Cannot read properties of undefined (reading 'wrapDynamicImport')
+			// if you try to run ssr.runner.import before the server has started so
+			// we do it inside here to avoid that
+			await (init_manifest ??= update_manifest());
+
+			if (req.url?.endsWith('/_app/building')) {
+				res.end();
+				return;
+			}
+
+			next();
+		}
+	});
+
 	return () => {
 		const serve_static_middleware = vite_dev_server.middlewares.stack.find(
 			(middleware) =>
@@ -503,11 +524,6 @@ export async function dev(
 		remove_static_middlewares(vite_dev_server.middlewares);
 
 		vite_dev_server.middlewares.use(async (req, res) => {
-			// Vite throws a Cannot read properties of undefined (reading 'wrapDynamicImport')
-			// if you try to run ssr.runner.import before the server has started so
-			// we do it inside here to avoid that
-			await (init_manifest ??= update_manifest());
-
 			// Vite's base middleware strips out the base path. Restore it
 			const original_url = req.url;
 			req.url = req.originalUrl;
