@@ -1,5 +1,13 @@
 # @sveltejs/kit
 
+## 3.0.0-next.25
+
+### Patch Changes
+
+- chore: build streamed responses from async generators ([#16847](https://github.com/sveltejs/kit/pull/16847))
+
+- fix: discard invalidation results when a navigation completes while they load ([#16852](https://github.com/sveltejs/kit/pull/16852))
+
 ## 3.0.0-next.24
 
 ### Minor Changes
